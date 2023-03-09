@@ -1,11 +1,29 @@
 import express from 'express';
+import { Response } from 'express';
+import cors from 'cors';
+import { AppDataSource } from './data/config/data-source';
+import UserRoutes from './infra/user-routes';
 
-import { Router, Request, Response } from 'express';
+const PORT = 3333;
 
 const app = express();
-
-const route = Router();
-
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  }),
+);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.listen(3333, () => 'server running on port 3333');
+app.get('/', (res: Response) => {
+  res.json({ status: 'sucess', version: '1.0.0' }).status(200);
+});
+
+app.use('/user', UserRoutes);
+
+AppDataSource.initialize()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server is running in port ${PORT}`));
+  })
+  .catch((error) => console.log(error));
